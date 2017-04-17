@@ -1,0 +1,112 @@
+;; C-hをbackspaceに
+(global-set-key (kbd "C-h") 'delete-backward-char)
+
+;; ==================================
+;; R言語
+;; ==================================
+
+(setq load-path (cons "/usr/share/emacs/site-lisp/ess" load-path))
+(when (locate-library "ess-site")
+  (require 'ess-site))
+(setq auto-mode-alist
+      (cons (cons "\\.[rR]$" 'R-mode) auto-mode-alist))
+(autoload 'R-mode "ess-site" "Emacs Speaks Statistics mode" t)
+
+;; ESS Auto-complete
+(when (locate-library "ess-site")
+(setq ess-use-auto-complete t)
+;; (setq ess-use-auto-complete 'script-only)
+)
+
+;; ESS R Data View
+(define-key ess-mode-map (kbd "C-c v") 'ess-R-dv-pprint)
+
+;; ess-R-object-popup
+(when (locate-library "ess-site")
+(require 'ess-R-object-popup)
+(define-key ess-mode-map "\C-c\C-g" 'ess-R-object-popup)
+)
+
+;; hlem-R
+(when (locate-library "ess-site")
+(require 'helm-R)
+(define-key ess-mode-map "\C-ch" 'helm-for-R)
+(define-key inferior-ess-mode-map "\C-ch" 'helm-for-R)
+)
+
+;; R 起動時にワーキングディレクトリを訊ねない
+(setq ess-ask-for-ess-directory nil)
+
+;;yasnippetの設定
+(require 'yasnippet) ;; not yasnippet-bundle
+(yas/initialize)
+
+
+;;anything-c-source-R-helpの設定
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(setq anything-c-source-R-help
+‘((name . "R objects / help")
+(init . (lambda ()
+;; this grabs the process name associated with the buffer
+(setq anything-c-ess-local-process-name ess-local-process-name)))
+(candidates . (lambda ()
+(condition-case nil
+(ess-get-object-list anything-c-ess-local-process-name)
+(error nil))))
+(action
+("help" . ess-display-help-on-object)
+("head (10)" . (lambda(obj-name)
+(ess-execute (concat "head(" obj-name ", n = 10)n") nil (concat "R head: " obj-name))))
+("head (100)" . (lambda(obj-name)
+(ess-execute (concat "head(" obj-name ", n = 100)n") nil (concat "R head: " obj-name))))
+("tail" . (lambda(obj-name)
+(ess-execute (concat "tail(" obj-name ", n = 10)n") nil (concat "R tail: " obj-name))))
+("str" . (lambda(obj-name)
+(ess-execute (concat "str(" obj-name ")n") nil (concat "R str: " obj-name))))
+("summary" . (lambda(obj-name)
+(ess-execute (concat "summary(" obj-name ")n") nil (concat "R summary: " obj-name))))
+("view source" . (lambda(obj-name)
+(ess-execute (concat "print(" obj-name ")n") nil (concat "R object: " obj-name))))
+("dput" . (lambda(obj-name)
+(ess-execute (concat "dput(" obj-name ")n") nil (concat "R dput: " obj-name)))))
+(volatile)))
+
+
+;; anything-c-source-R-localの設定
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(setq anything-c-source-R-local
+‘((name . "R local objects")
+(init . (lambda ()
+;; this grabs the process name associated with the buffer
+(setq anything-c-ess-local-process-name ess-local-process-name)
+;; this grabs the buffer for later use
+(setq anything-c-ess-buffer (current-buffer))))
+(candidates . (lambda ()
+(let (buf)
+(condition-case nil
+(with-temp-buffer
+(progn
+(setq buf (current-buffer))
+(with-current-buffer anything-c-ess-buffer
+(ess-command "print(ls.str(), max.level=0)n" buf))
+(split-string (buffer-string) "n" t)))
+(error nil)))))
+(display-to-real . (lambda (obj-name) (car (split-string obj-name " : " t))))
+(action
+("str" . (lambda(obj-name)
+(ess-execute (concat "str(" obj-name ")n") nil (concat "R str: " obj-name))))
+("summary" . (lambda(obj-name)
+(ess-execute (concat "summary(" obj-name ")n") nil (concat "R summary: " obj-name))))
+("head (10)" . (lambda(obj-name)
+(ess-execute (concat "head(" obj-name ", n = 10)n") nil (concat "R head: " obj-name))))
+("head (100)" . (lambda(obj-name)
+(ess-execute (concat "head(" obj-name ", n = 100)n") nil (concat "R head: " obj-name))))
+("tail" . (lambda(obj-name)
+(ess-execute (concat "tail(" obj-name ", n = 10)n") nil (concat "R tail: " obj-name))))
+("print" . (lambda(obj-name)
+(ess-execute (concat "print(" obj-name ")n") nil (concat "R object: " obj-name))))
+("dput" . (lambda(obj-name)
+(ess-execute (concat "dput(" obj-name ")n") nil (concat "R dput: " obj-name)))))
+(volatile)))

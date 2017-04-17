@@ -1,0 +1,3 @@
+;; -*- mode: emacs-lisp -*-
+;; History entries used for anything adaptive display.
+(setq anything-c-adaptive-history (quote ((file ("/home/saltground/.emacs.d/Inits/02_ESS.el" ("" . 2)) ("/home/saltground/hoge.R" ("" . 4)) ("/home/saltground/.emacs.d/Cask" ("" . 1))) (buffer ("init.el" ("" . 1)) ("01_c.el" ("" . 2)) ("00_globle.el" ("" . 1)) ("init.el<ダウンロード>" ("" . 2)) ("02_ESS.el" ("" . 2))))))
